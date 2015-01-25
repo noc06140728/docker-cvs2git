@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+
+if [ "$1" == "" ]
+then
+    echo "USAGE: cvs2git.sh <CVS_REPO_DIR>"
+    exit 1
+fi
+
+if [ ! -d ~/cvsrepo/$1 ]
+then
+    echo "ERROR: $1 is not directory."
+    exit 1
+fi
+
+REPO_NAME=$1
+
+/tmp/cvs2svn-trunk/cvs2git --blobfile /tmp/git-blob.dat --dumpfile /tmp/git-dump.dat --encoding=sjis ~/cvsrepo/$REPO_NAME
+
+mkdir ~/gitrepo/$REPO_NAME.git && true
+cd ~/gitrepo/$REPO_NAME.git
+git init --bare
+cat /tmp/git-blob.dat /tmp/git-dump.dat | git fast-import
+git branch -D TAG.FIXUP && true
+git gc --prune=now
+
